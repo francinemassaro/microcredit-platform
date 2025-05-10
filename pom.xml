@@ -35,7 +35,10 @@
 
 	<properties>
 		<java.version>21</java.version>
+		<sonar.organization>repositories-francine-massaro50146707</sonar.organization>
+		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
 	</properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

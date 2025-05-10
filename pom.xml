@@ -11,6 +11,7 @@
 	<groupId>com.microcredit</groupId>
 	<artifactId>platform</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
+	<packaging>pom</packaging>
 	<name>microcredit-platform</name>
 	<description>Plataforma de Microcrédito com Spring Boot</description>
 	<url/>
@@ -26,6 +27,12 @@
 		<tag/>
 		<url/>
 	</scm>
+
+	<modules>
+		<module>user-service</module>
+		<!-- depois vamos adicionar os outros aqui -->
+	</modules>
+
 	<properties>
 		<java.version>21</java.version>
 	</properties>

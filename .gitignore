@@ -31,3 +31,14 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# Logs
+*.log
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
+
+# Outras pastas temporárias
+*.class
+/out

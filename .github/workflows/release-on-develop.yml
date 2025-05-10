@@ -1,9 +1,10 @@
 name: Release on Develop
 
 on:
-  push:
-    branches:
-      - develop
+  workflow_run:
+    workflows: ["Maven Build"]
+    types:
+      - completed
 
 jobs:
   release:

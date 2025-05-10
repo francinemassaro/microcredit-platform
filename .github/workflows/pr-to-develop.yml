@@ -4,11 +4,11 @@ on:
   push:
     branches:
       - 'feature/**'
+      - 'ci/**'
 
 jobs:
   create-pr:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v3

@@ -1,0 +1,23 @@
+name: PR to Develop
+
+on:
+  push:
+    branches:
+      - 'feature/**'
+
+jobs:
+  create-pr:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Create PR to develop
+        uses: repo-sync/pull-request@v2
+        with:
+          source_branch: ${{ github.ref_name }}
+          destination_branch: develop
+          pr_title: "Auto PR: merge ${{ github.ref_name }} into develop"
+          pr_body: "Este PR foi criado automaticamente via GitHub Actions"
+          github_token: ${{ secrets.GITHUB_TOKEN }}

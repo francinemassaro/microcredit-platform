@@ -28,7 +28,7 @@ This project simulates a microcredit platform where users can register, apply fo
 
 Projeto sendo criado com o objetivo de consolidar e validar conhecimentos de desenvolvedora back-end Java, aplicando boas práticas, arquitetura e ferramentas modernas de desenvolvimento.
 
-## ✅ Objetivos de estudo e validação
+### ✅ Objetivos de estudo e validação
 - Praticar arquitetura modular com Spring Boot
 - Criar múltiplos módulos com responsabilidade bem definida (ex: usuários, empréstimos, pagamentos)
 - Trabalhar com DTOs, separação entre exposição interna e externa

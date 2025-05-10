@@ -1,4 +1,4 @@
-name: Release on Develop
+name: Auto Release from Develop
 
 on:
   workflow_run:
@@ -8,20 +8,18 @@ on:
 
 jobs:
   release:
+    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'develop' }}
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout código
         uses: actions/checkout@v3
 
-      - name: Configurar Java 21
+      - name: Configurar Java
         uses: actions/setup-java@v3
         with:
           distribution: temurin
           java-version: 21
-
-      - name: Build com Maven
-        run: mvn clean install -B
 
       - name: Gerar nome da tag
         id: tagger

@@ -5,7 +5,6 @@ import com.microcredit.user.dto.response.UserResDTO;
 import com.microcredit.user.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -25,7 +24,7 @@ public class UserController {
 
     @PostMapping
     public ResponseEntity<UserResDTO> create(@RequestBody @Valid CreateUserReqDTO request) {
-        UserResDTO response = userService.createUser(request);
+        UserResDTO response = userService.save(request);
         return ResponseEntity.ok(response);
     }
 

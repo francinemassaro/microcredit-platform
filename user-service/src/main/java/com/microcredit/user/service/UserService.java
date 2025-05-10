@@ -16,7 +16,7 @@ public class UserService {
         this.repository = repository;
     }
 
-    public UserResDTO createUser(CreateUserReqDTO request) {
+    public UserResDTO save(CreateUserReqDTO request) {
         User user = UserMapper.toEntity(request);
         User saved = repository.save(user);
         return UserMapper.toResponse(saved);

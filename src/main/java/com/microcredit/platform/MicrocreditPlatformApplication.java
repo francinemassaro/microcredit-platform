@@ -8,6 +8,7 @@ public class MicrocreditPlatformApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(MicrocreditPlatformApplication.class, args);
+		//
 	}
 
 }

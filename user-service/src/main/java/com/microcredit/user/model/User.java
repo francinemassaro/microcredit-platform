@@ -8,6 +8,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 
 import java.time.LocalDateTime;
 
@@ -16,25 +17,20 @@ import java.time.LocalDateTime;
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    public Long id;
+    private Long id;
     @NotBlank
-    public String name;
+    private String name;
+    @NotBlank
+    @Pattern(regexp = "\\d{11}", message = "CPF deve conter 11 dígitos numéricos")
+    private String cpf;
     @Email
     @Column(unique = true)
-    public String email;
+    private String email;
     @NotBlank
-    public String password;
-    public LocalDateTime createdAt = LocalDateTime.now();
+    private String password;
+    private LocalDateTime createdAt = LocalDateTime.now();
 
     public User() {
-    }
-
-    public User(Long id, String name, String email, String password, LocalDateTime createdAt) {
-        this.id = id;
-        this.name = name;
-        this.email = email;
-        this.password = password;
-        this.createdAt = createdAt;
     }
 
     public Long getId() {
@@ -51,6 +47,14 @@ public class User {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getCpf() {
+        return cpf;
+    }
+
+    public void setCpf(String cpf) {
+        this.cpf = cpf;
     }
 
     public String getEmail() {

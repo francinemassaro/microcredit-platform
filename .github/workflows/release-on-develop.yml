@@ -3,6 +3,7 @@ name: Release from Develop
 on:
   workflow_run:
     workflows: ["Maven Build"]
+    types:
       - completed
 
 jobs:

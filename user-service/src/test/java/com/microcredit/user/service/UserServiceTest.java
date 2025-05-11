@@ -3,6 +3,7 @@ package com.microcredit.user.service;
 import com.microcredit.user.dto.request.CreateUserReqDTO;
 import com.microcredit.user.dto.request.UpdateUserReqDTO;
 import com.microcredit.user.dto.response.UserResDTO;
+import com.microcredit.user.mapper.UserMapper;
 import com.microcredit.user.model.User;
 import com.microcredit.user.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -245,5 +246,45 @@ class UserServiceTest {
 
         assertFalse(user.isActive(), "Usuário deveria estar inativo");
         verify(userRepository).save(user);
+    }
+
+    @Test
+    void testUpdateUserWithNullFields() {
+        User user = new User();
+        user.setId(1L);
+        user.setName("Ana");
+        user.setEmail("ana@email.com");
+        user.setCpf("99999999999");
+        user.setPassword("senha");
+
+        UpdateUserReqDTO dto = new UpdateUserReqDTO();
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(userRepository.save(any(User.class))).thenAnswer(i -> i.getArgument(0));
+
+        UserResDTO result = userService.updateUser(1L, dto);
+
+        assertEquals("Ana", result.getName());
+        assertEquals("ana@email.com", result.getEmail());
+    }
+
+    @Test
+    void testGetAllIncludingInactiveUsers() {
+        User user1 = new User();
+        user1.setId(1L);
+        user1.setName("Ana");
+        user1.setActive(true);
+
+        User user2 = new User();
+        user2.setId(2L);
+        user2.setName("Carlos");
+        user2.setActive(false);
+
+        when(userRepository.findAll()).thenReturn(List.of(user1, user2));
+
+        List<UserResDTO> result = userService.getAllUsers();
+
+        assertEquals(2, result.size());
+        assertTrue(result.stream().anyMatch(u -> !u.isActive()));
     }
 }

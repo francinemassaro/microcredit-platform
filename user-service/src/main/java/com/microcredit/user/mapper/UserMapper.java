@@ -16,7 +16,6 @@ public class UserMapper {
     }
 
     public static UserResDTO toResponse(User user) {
-
         UserResDTO userResDTO = new UserResDTO();
         userResDTO.setId(user.getId());
         userResDTO.setName(user.getName());

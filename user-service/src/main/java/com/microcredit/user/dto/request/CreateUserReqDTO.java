@@ -10,19 +10,30 @@ public class CreateUserReqDTO {
     @NotBlank
     public String email;
     @NotBlank
+    public String cpf;
+    @NotBlank
     public String password;
 
     public CreateUserReqDTO() {
     }
 
-    public CreateUserReqDTO(String name, String email, String password) {
+    public CreateUserReqDTO(String name, String email, String cpf, String password) {
         this.name = name;
         this.email = email;
+        this.cpf = cpf;
         this.password = password;
     }
 
     public String getName() {
         return name;
+    }
+
+    public String getCpf() {
+        return cpf;
+    }
+
+    public void setCpf(String cpf) {
+        this.cpf = cpf;
     }
 
     public void setName(String name) {

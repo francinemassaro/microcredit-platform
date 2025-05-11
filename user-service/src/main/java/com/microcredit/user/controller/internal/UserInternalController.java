@@ -17,8 +17,13 @@ public class UserInternalController {
         this.service = service;
     }
 
-    @GetMapping("/users")
-    public List<UserResDTO> getAll(){
+    @GetMapping("users/active-inactive")
+    public List<UserResDTO> getAllActiveAndInactive(){
         return service.getAllUsers();
+    }
+
+    @GetMapping("/users")
+    public List<UserResDTO> getAllActiveUsers(){
+        return service.getAllActiveUsers();
     }
 }

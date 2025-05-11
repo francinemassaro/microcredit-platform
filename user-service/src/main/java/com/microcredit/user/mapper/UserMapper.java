@@ -16,11 +16,13 @@ public class UserMapper {
     }
 
     public static UserResDTO toResponse(User user) {
+
         UserResDTO userResDTO = new UserResDTO();
         userResDTO.setId(user.getId());
         userResDTO.setName(user.getName());
         userResDTO.setEmail(user.getEmail());
         userResDTO.setCreatedAt(user.getCreatedAt());
+        userResDTO.setActive(user.isActive());
         return userResDTO;
     }
 }

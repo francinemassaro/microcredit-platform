@@ -1,5 +1,3 @@
-name: Release from Develop
-
 on:
   workflow_dispatch:
   workflow_run:
@@ -13,10 +11,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout do commit correto
+      - name: Checkout commit da develop (workflow_run)
+        if: ${{ github.event_name == 'workflow_run' }}
         uses: actions/checkout@v3
         with:
-          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - name: Checkout da branch atual (manual)
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        uses: actions/checkout@v3
 
       - name: Configurar Git
         run: |

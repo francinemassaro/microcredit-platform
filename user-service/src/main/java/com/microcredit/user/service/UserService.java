@@ -44,6 +44,13 @@ public class UserService {
                 .toList();
     }
 
+    public List<UserResDTO> getAllActiveUsers() {
+        List<User> users = repository.findAllByActiveTrue();
+        return users.stream()
+                .map(UserMapper::toResponse)
+                .toList();
+    }
+
     public UserResDTO updateUser(Long id, UpdateUserReqDTO request) {
         User user = repository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado"));
@@ -58,5 +65,12 @@ public class UserService {
 
         User saved = repository.save(user);
         return UserMapper.toResponse(saved);
+    }
+
+    public void inactiveUser(Long id) {
+        User user = repository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado"));
+        user.setActive(false);
+        repository.save(user);
     }
 }

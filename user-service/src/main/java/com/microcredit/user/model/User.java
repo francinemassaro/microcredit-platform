@@ -28,9 +28,28 @@ public class User {
     private String email;
     @NotBlank
     private String password;
+    private boolean active = true;
     private LocalDateTime createdAt = LocalDateTime.now();
 
     public User() {
+    }
+
+    public User(Long id, String name, String cpf, String email, String password, boolean active, LocalDateTime createdAt) {
+        this.id = id;
+        this.name = name;
+        this.cpf = cpf;
+        this.email = email;
+        this.password = password;
+        this.active = active;
+        this.createdAt = createdAt;
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
     }
 
     public Long getId() {

@@ -7,15 +7,25 @@ public class UserResDTO {
     public String name;
     public String email;
     public LocalDateTime createdAt;
+    public boolean active;
 
     public UserResDTO() {
     }
 
-    public UserResDTO(Long id, String name, String email, LocalDateTime createdAt) {
+    public UserResDTO(Long id, String name, String email, LocalDateTime createdAt, boolean active) {
         this.id = id;
         this.name = name;
         this.email = email;
         this.createdAt = createdAt;
+        this.active = active;
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
     }
 
     public Long getId() {

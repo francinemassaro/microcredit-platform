@@ -16,6 +16,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 
@@ -132,6 +133,54 @@ class UserServiceTest {
     }
 
     @Test
+    void testGetAllActiveUsers() {
+        User user1 = new User();
+        user1.setId(1L);
+        user1.setName("Ana");
+        user1.setEmail("ana@email.com");
+        user1.setCpf("11111111111");
+        user1.setPassword("senha");
+        user1.setActive(true);
+        user1.setCreatedAt(LocalDateTime.now());
+
+        User user2 = new User();
+        user2.setId(2L);
+        user2.setName("Carlos");
+        user2.setEmail("carlos@email.com");
+        user2.setCpf("22222222222");
+        user2.setPassword("senha123");
+        user2.setActive(true);
+        user2.setCreatedAt(LocalDateTime.now());
+
+        when(userRepository.findAllByActiveTrue()).thenReturn(List.of(user1, user2));
+
+        List<UserResDTO> result = userService.getAllActiveUsers();
+
+        assertEquals(2, result.size());
+        assertEquals("Ana", result.get(0).getName());
+        assertEquals("Carlos", result.get(1).getName());
+    }
+
+    @Test
+    void testGetAllUsersWithOnlyInactives_ReturnsEmptyList() {
+        User user = new User();
+        user.setId(1L);
+        user.setName("Beatriz");
+        user.setEmail("beatriz@email.com");
+        user.setCpf("33333333333");
+        user.setPassword("senha");
+        user.setActive(false);
+        user.setCreatedAt(LocalDateTime.now());
+
+        when(userRepository.findAllByActiveTrue()).thenReturn(List.of());
+
+        List<UserResDTO> result = userService.getAllUsers();
+
+        assertTrue(result.isEmpty(), "A lista deveria estar vazia pois não há usuários ativos");
+    }
+
+
+    @Test
     void testUpdateUserSuccess() {
         User existingUser = new User();
         existingUser.setId(1L);
@@ -171,5 +220,30 @@ class UserServiceTest {
         });
 
         assertEquals("404 NOT_FOUND \"Usuário não encontrado\"", exception.getMessage());
+    }
+
+    @Test
+    void testDeletedUserNotFound() {
+        when(userRepository.findById(99L)).thenReturn(Optional.empty());
+
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> {
+            userService.inactiveUser(99L);
+        });
+
+        assertEquals("404 NOT_FOUND \"Usuário não encontrado\"", exception.getMessage());
+    }
+
+    @Test
+    void testDeletedUserSuccess() {
+        User user = new User();
+        user.setId(1L);
+        user.setActive(true);
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+
+        userService.inactiveUser(1L);
+
+        assertFalse(user.isActive(), "Usuário deveria estar inativo");
+        verify(userRepository).save(user);
     }
 }

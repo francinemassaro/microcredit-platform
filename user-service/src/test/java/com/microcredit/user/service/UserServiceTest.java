@@ -3,7 +3,6 @@ package com.microcredit.user.service;
 import com.microcredit.user.dto.request.CreateUserReqDTO;
 import com.microcredit.user.dto.request.UpdateUserReqDTO;
 import com.microcredit.user.dto.response.UserResDTO;
-import com.microcredit.user.mapper.UserMapper;
 import com.microcredit.user.model.User;
 import com.microcredit.user.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -29,7 +28,7 @@ class UserServiceTest {
     @BeforeEach
     void setUp() {
         userRepository = mock(UserRepository.class);
-        userService = new UserService(userRepository);
+        userService = new UserService(userRepository, encoder);
     }
 
     @Test

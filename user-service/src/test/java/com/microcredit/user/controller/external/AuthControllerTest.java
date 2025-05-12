@@ -36,18 +36,6 @@ class AuthControllerTest {
     @Autowired
     ObjectMapper objectMapper;
 
-    /*
-        @Autowired MockMvc mockMvc;
-    @MockBean
-    UserService userService;
-    @MockBean
-    JwtUtil jwtUtil;
-    @MockBean
-    CustomUserDetailsService customUserDetailsService;
-    @Autowired
-    ObjectMapper objectMapper;
-    */
-
     @Test
     void testLoginSuccess() throws Exception {
         var req = new LoginReqDTO();

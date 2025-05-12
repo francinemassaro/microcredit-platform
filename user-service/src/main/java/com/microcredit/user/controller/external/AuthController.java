@@ -4,7 +4,9 @@ import com.microcredit.user.dto.request.LoginReqDTO;
 import com.microcredit.user.dto.response.LoginResDTO;
 import com.microcredit.user.service.AuthService;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,7 +25,11 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<LoginResDTO> login(
             @RequestBody @Valid LoginReqDTO request) {
-        LoginResDTO resp = authService.login(request);
-        return ResponseEntity.ok(resp);
+        try {
+            LoginResDTO resp = authService.login(request);
+            return ResponseEntity.ok(resp);
+        } catch (BadCredentialsException ex) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
     }
 }

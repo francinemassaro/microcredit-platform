@@ -2,9 +2,12 @@ package com.microcredit.user.controller.internal;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microcredit.user.dto.response.UserResDTO;
+import com.microcredit.user.security.JwtUtil;
+import com.microcredit.user.service.CustomUserDetailsService;
 import com.microcredit.user.service.UserService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
@@ -20,16 +23,17 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(controllers = UserInternalController.class)
+@AutoConfigureMockMvc(addFilters = false)
 class UserInternalControllerTest {
 
     @Autowired
-    private MockMvc mockMvc;
-
+    MockMvc mockMvc;
     @MockBean
-    private UserService userService;
-
-    @Autowired
-    private ObjectMapper objectMapper;
+    UserService userService;
+    @MockBean
+    JwtUtil jwtUtil;
+    @MockBean
+    CustomUserDetailsService customUserDetailsService;
 
     @Test
     void testGetAllActiveUsers() throws Exception {

@@ -53,7 +53,11 @@ public class SecurityConfig {
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class) // adiciona o filtro JWT antes do UsernamePasswordAuthenticationFilter
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                        // todo o resto exige autenticação
+                        /* todo o resto exige autenticação
+                        // 1) Só ADMIN pode /api/admin/**
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        // 2) Usuários “normais” e admin podem /api/users/**
+                        .requestMatchers("/api/users/**").hasAnyRole("USER","ADMIN")*/
                         .anyRequest().authenticated()
                 );
         return http.build();

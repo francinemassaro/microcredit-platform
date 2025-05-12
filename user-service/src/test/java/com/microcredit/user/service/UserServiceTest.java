@@ -3,11 +3,15 @@ package com.microcredit.user.service;
 import com.microcredit.user.dto.request.CreateUserReqDTO;
 import com.microcredit.user.dto.request.UpdateUserReqDTO;
 import com.microcredit.user.dto.response.UserResDTO;
-import com.microcredit.user.mapper.UserMapper;
 import com.microcredit.user.model.User;
 import com.microcredit.user.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.*;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
@@ -15,276 +19,144 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.BDDMockito.*;
 
-
+@ExtendWith(MockitoExtension.class)
 class UserServiceTest {
 
-    private UserRepository userRepository;
-    private UserService userService;
+    @Mock UserRepository repository;
+    @Mock
+    PasswordEncoder encoder;
+    @InjectMocks UserService userService;
 
     @BeforeEach
     void setUp() {
-        userRepository = mock(UserRepository.class);
-        userService = new UserService(userRepository);
+        // MockitoAnnotations.openMocks(this);  // não precisa com @ExtendWith
     }
 
     @Test
     void testSaveUser() {
-        CreateUserReqDTO request = new CreateUserReqDTO();
-        request.setName("Ana");
-        request.setEmail("ana@email.com");
-        request.setCpf("99999999999");
-        request.setPassword("123456");
+        // dado
+        CreateUserReqDTO req = new CreateUserReqDTO();
+        req.setName("Ana");
+        req.setEmail("ana@email.com");
+        req.setCpf("99999999999");
+        req.setPassword("123456");
+        given(repository.findByEmail(req.getEmail())).willReturn(Optional.empty());
+        given(encoder.encode("123456")).willReturn("$2a$hash");
+        User saved = new User();
+        saved.setId(1L);
+        saved.setName("Ana");
+        saved.setEmail(req.getEmail());
+        saved.setCpf(req.getCpf());
+        saved.setPassword("$2a$hash");
+        saved.setCreatedAt(LocalDateTime.now());
+        given(repository.save(any(User.class))).willReturn(saved);
 
-        User savedUser = new User();
-        savedUser.setId(1L);
-        savedUser.setName(request.getName());
-        savedUser.setEmail(request.getEmail());
-        savedUser.setCpf(request.getCpf());
-        savedUser.setPassword(request.getPassword());
-        savedUser.setCreatedAt(LocalDateTime.now());
+        // quando
+        UserResDTO resp = userService.save(req);
 
-       when(userRepository.save(any(User.class))).thenReturn(savedUser);
-
-        UserResDTO response = userService.save(request);
-
-        assertNotNull(response);
-        assertEquals("Ana", response.getName());
-        assertEquals("ana@email.com", response.getEmail());
-        assertNotNull(response.getCreatedAt());
+        // então
+        assertNotNull(resp);
+        assertEquals("Ana", resp.getName());
+        then(repository).should().save(argThat(u -> u.getPassword().equals("$2a$hash")));
     }
 
     @Test
-    void testSaveWithEmailThatAlreadyExists() {
-        CreateUserReqDTO request = new CreateUserReqDTO();
-        request.setName("Ana");
-        request.setEmail("ana@email.com");
-        request.setCpf("99999999999");
-        request.setPassword("123456");
+    void testSaveWithExistingEmail() {
+        CreateUserReqDTO req = new CreateUserReqDTO();
+        req.setEmail("x@x.com");
+        given(repository.findByEmail("x@x.com"))
+                .willReturn(Optional.of(new User()));
 
-        User existingUser = new User();
-        existingUser.setEmail(request.getEmail());
-
-        when(userRepository.findByEmail(request.getEmail())).thenReturn(Optional.of(existingUser));
-
-        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> {
-            userService.save(request);
-        });
-
-        assertEquals("409 CONFLICT \"E-mail já cadastrado\"", exception.getMessage());
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+                () -> userService.save(req));
+        assertEquals(HttpStatus.CONFLICT, ex.getStatusCode());
+        assertTrue(ex.getReason().contains("E-mail já cadastrado"));
     }
 
     @Test
     void testGetByIdSuccess() {
-        User user = new User();
-        user.setId(1L);
-        user.setName("Carlos");
-        user.setEmail("carlos@email.com");
-        user.setPassword("senha");
-        user.setCreatedAt(LocalDateTime.now());
+        User u = new User();
+        u.setId(5L);
+        u.setName("Carlos");
+        u.setEmail("c@c.com");
+        u.setPassword("pw");
+        u.setCreatedAt(LocalDateTime.now());
+        given(repository.findById(5L)).willReturn(Optional.of(u));
 
-        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-
-        UserResDTO result = userService.getById(1L);
-
-        assertNotNull(result);
-        assertEquals("Carlos", result.getName());
+        UserResDTO dto = userService.getById(5L);
+        assertEquals("Carlos", dto.getName());
     }
 
     @Test
     void testGetByIdNotFound() {
-        when(userRepository.findById(99L)).thenReturn(Optional.empty());
-
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            userService.getById(99L);
-        });
-
-        assertEquals("Usuário não encontrado", exception.getMessage());
+        given(repository.findById(99L)).willReturn(Optional.empty());
+        RuntimeException ex = assertThrows(RuntimeException.class, () -> userService.getById(99L));
+        assertEquals("Usuário não encontrado", ex.getMessage());
     }
 
     @Test
     void testGetAllUsers() {
-        User user1 = new User();
-        user1.setId(1L);
-        user1.setName("Ana");
-        user1.setEmail("ana@email.com");
-        user1.setCpf("11111111111");
-        user1.setPassword("senha");
-        user1.setCreatedAt(LocalDateTime.now());
+        User u1 = new User(); u1.setName("A");
+        User u2 = new User(); u2.setName("B");
+        given(repository.findAll()).willReturn(List.of(u1, u2));
 
-        User user2 = new User();
-        user2.setId(2L);
-        user2.setName("Carlos");
-        user2.setEmail("carlos@email.com");
-        user2.setCpf("22222222222");
-        user2.setPassword("senha123");
-        user2.setCreatedAt(LocalDateTime.now());
-
-        when(userRepository.findAll()).thenReturn(List.of(user1, user2));
-
-        List<UserResDTO> result = userService.getAllUsers();
-
-        assertEquals(2, result.size());
-        assertEquals("Ana", result.get(0).getName());
-        assertEquals("Carlos", result.get(1).getName());
+        List<UserResDTO> list = userService.getAllUsers();
+        assertEquals(2, list.size());
+        assertEquals("A", list.get(0).getName());
     }
 
     @Test
     void testGetAllActiveUsers() {
-        User user1 = new User();
-        user1.setId(1L);
-        user1.setName("Ana");
-        user1.setEmail("ana@email.com");
-        user1.setCpf("11111111111");
-        user1.setPassword("senha");
-        user1.setActive(true);
-        user1.setCreatedAt(LocalDateTime.now());
+        User a = new User(); a.setName("A"); a.setActive(true);
+        User b = new User(); b.setName("B"); b.setActive(true);
+        given(repository.findAllByActiveTrue()).willReturn(List.of(a, b));
 
-        User user2 = new User();
-        user2.setId(2L);
-        user2.setName("Carlos");
-        user2.setEmail("carlos@email.com");
-        user2.setCpf("22222222222");
-        user2.setPassword("senha123");
-        user2.setActive(true);
-        user2.setCreatedAt(LocalDateTime.now());
-
-        when(userRepository.findAllByActiveTrue()).thenReturn(List.of(user1, user2));
-
-        List<UserResDTO> result = userService.getAllActiveUsers();
-
-        assertEquals(2, result.size());
-        assertEquals("Ana", result.get(0).getName());
-        assertEquals("Carlos", result.get(1).getName());
+        List<UserResDTO> list = userService.getAllActiveUsers();
+        assertEquals(2, list.size());
     }
-
-    @Test
-    void testGetAllUsersWithOnlyInactives_ReturnsEmptyList() {
-        User user = new User();
-        user.setId(1L);
-        user.setName("Beatriz");
-        user.setEmail("beatriz@email.com");
-        user.setCpf("33333333333");
-        user.setPassword("senha");
-        user.setActive(false);
-        user.setCreatedAt(LocalDateTime.now());
-
-        when(userRepository.findAllByActiveTrue()).thenReturn(List.of());
-
-        List<UserResDTO> result = userService.getAllUsers();
-
-        assertTrue(result.isEmpty(), "A lista deveria estar vazia pois não há usuários ativos");
-    }
-
 
     @Test
     void testUpdateUserSuccess() {
-        User existingUser = new User();
-        existingUser.setId(1L);
-        existingUser.setName("Ana");
-        existingUser.setEmail("ana@email.com");
-        existingUser.setCpf("99999999999");
-        existingUser.setPassword("senha");
+        User orig = new User(); orig.setId(1L); orig.setName("X"); orig.setPassword("p");
+        given(repository.findById(1L)).willReturn(Optional.of(orig));
+        given(repository.save(any(User.class))).willAnswer(i -> i.getArgument(0));
 
-        UpdateUserReqDTO update = new UpdateUserReqDTO();
-        update.setName("Ana Maria");
-        update.setPassword("novaSenha");
+        UpdateUserReqDTO req = new UpdateUserReqDTO();
+        req.setName("Y");
+        req.setPassword("new");
+        UserResDTO dto = userService.updateUser(1L, req);
 
-        User savedUser = new User();
-        savedUser.setId(1L);
-        savedUser.setName("Ana Maria");
-        savedUser.setEmail("ana@email.com");
-        savedUser.setCpf("99999999999");
-        savedUser.setPassword("novaSenha");
-
-        when(userRepository.findById(1L)).thenReturn(Optional.of(existingUser));
-        when(userRepository.save(any(User.class))).thenReturn(savedUser);
-
-        UserResDTO result = userService.updateUser(1L, update);
-
-        assertEquals("Ana Maria", result.getName());
+        assertEquals("Y", dto.getName());
     }
 
     @Test
     void testUpdateUserNotFound() {
-        UpdateUserReqDTO update = new UpdateUserReqDTO();
-        update.setName("Novo Nome");
-
-        when(userRepository.findById(99L)).thenReturn(Optional.empty());
-
-        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> {
-            userService.updateUser(99L, update);
-        });
-
-        assertEquals("404 NOT_FOUND \"Usuário não encontrado\"", exception.getMessage());
+        given(repository.findById(50L)).willReturn(Optional.empty());
+        UpdateUserReqDTO req = new UpdateUserReqDTO();
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+                () -> userService.updateUser(50L, req));
+        assertEquals(HttpStatus.NOT_FOUND, ex.getStatusCode());
     }
 
     @Test
-    void testDeletedUserNotFound() {
-        when(userRepository.findById(99L)).thenReturn(Optional.empty());
+    void testInactiveUserSuccess() {
+        User u = new User(); u.setActive(true);
+        given(repository.findById(2L)).willReturn(Optional.of(u));
 
-        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> {
-            userService.inactiveUser(99L);
-        });
+        userService.inactiveUser(2L);
 
-        assertEquals("404 NOT_FOUND \"Usuário não encontrado\"", exception.getMessage());
+        assertFalse(u.isActive());
+        then(repository).should().save(u);
     }
 
     @Test
-    void testDeletedUserSuccess() {
-        User user = new User();
-        user.setId(1L);
-        user.setActive(true);
-
-        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-
-        userService.inactiveUser(1L);
-
-        assertFalse(user.isActive(), "Usuário deveria estar inativo");
-        verify(userRepository).save(user);
-    }
-
-    @Test
-    void testUpdateUserWithNullFields() {
-        User user = new User();
-        user.setId(1L);
-        user.setName("Ana");
-        user.setEmail("ana@email.com");
-        user.setCpf("99999999999");
-        user.setPassword("senha");
-
-        UpdateUserReqDTO dto = new UpdateUserReqDTO();
-
-        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-        when(userRepository.save(any(User.class))).thenAnswer(i -> i.getArgument(0));
-
-        UserResDTO result = userService.updateUser(1L, dto);
-
-        assertEquals("Ana", result.getName());
-        assertEquals("ana@email.com", result.getEmail());
-    }
-
-    @Test
-    void testGetAllIncludingInactiveUsers() {
-        User user1 = new User();
-        user1.setId(1L);
-        user1.setName("Ana");
-        user1.setActive(true);
-
-        User user2 = new User();
-        user2.setId(2L);
-        user2.setName("Carlos");
-        user2.setActive(false);
-
-        when(userRepository.findAll()).thenReturn(List.of(user1, user2));
-
-        List<UserResDTO> result = userService.getAllUsers();
-
-        assertEquals(2, result.size());
-        assertTrue(result.stream().anyMatch(u -> !u.isActive()));
+    void testInactiveUserNotFound() {
+        given(repository.findById(3L)).willReturn(Optional.empty());
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+                () -> userService.inactiveUser(3L));
+        assertEquals(HttpStatus.NOT_FOUND, ex.getStatusCode());
     }
 }

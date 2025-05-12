@@ -7,6 +7,7 @@ import com.microcredit.user.mapper.UserMapper;
 import com.microcredit.user.model.User;
 import com.microcredit.user.repository.UserRepository;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -16,9 +17,11 @@ import java.util.List;
 public class UserService {
 
     private final UserRepository repository;
+    private final PasswordEncoder encoder;
 
-    public UserService(UserRepository repository) {
+    public UserService(UserRepository repository, PasswordEncoder encoder) {
         this.repository = repository;
+        this.encoder = encoder;
     }
 
     public UserResDTO save(CreateUserReqDTO request) {
@@ -27,6 +30,8 @@ public class UserService {
         }
 
         User user = UserMapper.toEntity(request);
+        user.setPassword(encoder.encode(request.getPassword()));
+
         User saved = repository.save(user);
         return UserMapper.toResponse(saved);
     }

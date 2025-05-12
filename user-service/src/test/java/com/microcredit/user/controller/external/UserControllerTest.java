@@ -4,9 +4,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microcredit.user.dto.request.CreateUserReqDTO;
 import com.microcredit.user.dto.request.UpdateUserReqDTO;
 import com.microcredit.user.dto.response.UserResDTO;
+import com.microcredit.user.security.JwtUtil;
+import com.microcredit.user.service.CustomUserDetailsService;
 import com.microcredit.user.service.UserService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
@@ -27,16 +30,18 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(controllers = UserController.class)
+@AutoConfigureMockMvc(addFilters = false)
 class UserControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
-
+    @Autowired MockMvc mockMvc;
     @MockBean
-    private UserService userService;
-
+    UserService userService;
+    @MockBean
+    JwtUtil jwtUtil;
+    @MockBean
+    CustomUserDetailsService customUserDetailsService;
     @Autowired
-    private ObjectMapper objectMapper;
+    ObjectMapper objectMapper;
 
     @Test
     void testCreateUser() throws Exception {
